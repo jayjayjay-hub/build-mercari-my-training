@@ -11,13 +11,13 @@ from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # main.py が存在するディレクトリの絶対パスを取得
-# current_dir = os.path.dirname(os.path.realpath(__file__))
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
+# データベースファイルの絶対パスを取得
+database_path = os.path.abspath(os.path.join(current_dir, '..', 'db', 'items.db'))
 
 # SQLite db path
-# database_url = f"sqlite:///{os.path.join(current_dir, '..', 'db', 'items.db')}"
-
-# SQLite db path
-database_url = "sqlite:///items.db"
+database_url = f"sqlite:///{database_path}"
 
 # SQLAlchemy engine
 engine = create_engine(database_url)
@@ -36,7 +36,7 @@ items = Table(
 )
 
 # create table
-# metadata.create_all(engine)
+metadata.create_all(engine)
 
 app = FastAPI()
 logger = logging.getLogger("uvicorn")
