@@ -10,6 +10,11 @@ app = FastAPI()
 logger = logging.getLogger("uvicorn")
 logger.level = logging.INFO
 
+# items.json ファイルの絶対パスを取得
+items_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "items.json")
+
+# images ディレクトリの絶対パスを取得
+images_folder_path =  os.path.join(os.path.dirname(os.path.realpath(__file__)), "images")
 
 app.add_middleware(
 	CORSMiddleware,
@@ -26,9 +31,6 @@ def root():
 @app.post("/items")
 def add_item(name: str = Form(...), category: str = Form(...)):
 	logger.info(f"Receive item: {name}, category: {category}")
-
-	# items.json ファイルの絶対パスを取得
-	items_file_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "items.json")
 
 	# items.json ファイルが存在しないか、中身が空である場合、初期化する
 	if not os.path.exists(items_file_path) or os.path.getsize(items_file_path) == 0:
