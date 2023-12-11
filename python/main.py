@@ -10,8 +10,14 @@ from fastapi import FastAPI, Form, HTTPException, UploadFile, File, Path
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+# main.py が存在するディレクトリの絶対パスを取得
+current_dir = os.path.dirname(os.path.realpath(__file__))
+
+# データベースファイルの絶対パスを取得
+database_path = os.path.abspath(os.path.join(current_dir, '..', 'db', 'items.db'))
+
 # SQLite db path
-database_url = "sqlite:///items.db"
+database_url = f"sqlite:///{database_path}"
 
 # SQLAlchemy engine
 engine = create_engine(database_url)
@@ -77,27 +83,75 @@ def add_item(name: str = Form(...), category: str = Form(...), image: UploadFile
 	with open(image_path, "wb") as f:
 		f.write(file_content)
 
-	new_item = {"name": name, "category": category, "image_name": image_filename}
-	data["items"].append(new_item)
+	# SQLAlchemy session を作成
+	SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+	db = SessionLocal()
 
-	with open(items_file_path, "w") as f:
-		json.dump(data, f)
+	# itemsテーブルにデータを追加
+	db.execute(
+		items.insert().values(
+			name = name,
+			category = category,
+			image_name = image_filename,
+		)
+	)
+
+	# セッションのコミット
+	db.commit()
+
+	# セッションのクローズ
+	db.close()
 
 	return {"message": f"Item received: {name}, category: {category}, image: {image_filename}"}
 
 @app.get("/items")
 def get_items():
-	with open(items_file_path, "r") as f:
-		data = json.load(f)
-	return data
+	# SQLAlchemy session を作成
+	SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+	db = SessionLocal()
+
+	# itemsテーブルからデータを取得
+	result = db.query(items).all()
+
+	# セッションのクローズ
+	db.close()
+
+	# 結果をリストに変換
+	items_list = [{"id": row.id, "name": row.name, "category": row.category, "image_name": row.image_name} for row in result]
+
+	return {"items": items_list}
 
 @app.get("/items/{item_id}")
 def get_item(item_id: int = Path(..., title="The ID of the item to get")):
-	with open(items_file_path, "r") as f:
-		data = json.load(f)
+	# SQLAlchemy session を作成
+	SessionLocal = sessionmaker(aoutocommit=False, outoflush=False, bind=engine)
+	db = SessionLocal()
+
+	# itemsテーブルから特定のデータを取得
+	result = db.query(items).filter(items.c.id == item_id).first()
+
+	# セッションのクローズ
+	db.close()
 
 	# item_id に対応する商品が存在するか確認
-	if item_id < 0 or item_id >= len(data["items"]):
+	if not result:
 		raise HTTPException(status_code=404, detail="Item not found")
 
-	return data["items"][item_id]
+	return {"id": result.id, "name": result.name, "category": result.category, "image_name": result.image_name}
+
+@app.get("/search")
+def search_items(keyword: str):
+	# SQLAlchemy session を作成
+	SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+	db = SessionLocal()
+
+	# itemsテーブルから指定されたキーワードを含むデータを取得
+	result = db.query(items).filter(items.c.name.contains(keyword)).all()
+
+	# セッションのクローズ
+	db.close()
+
+	# 結果をリストに変換
+	items_list = [{"name": row.name, "category": row.category} for row in result]
+
+	return {"items": items_list}
