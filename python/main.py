@@ -3,7 +3,7 @@ import logging
 import json
 import hashlib
 
-from fastapi import FastAPI, Form, HTTPException, UploadFile, File
+from fastapi import FastAPI, Form, HTTPException, UploadFile, File, Path
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -39,7 +39,7 @@ def add_item(name: str = Form(...), category: str = Form(...), image: UploadFile
 		os.makedirs(os.path.dirname(items_file_path), exist_ok=True)
 		with open(items_file_path, "w") as f:
 			json.dump({"items": []}, f)
-		with open(items_file_path, "r") as f:
+	with open(items_file_path, "r") as f:
 			data = json.load(f)
 
 	# ファイルのハッシュを計算してファイル名を作成
@@ -65,3 +65,14 @@ def get_items():
 	with open(items_file_path, "r") as f:
 		data = json.load(f)
 	return data
+
+@app.get("/items/{item_id}")
+def get_item(item_id: int = Path(..., title="The ID of the item to get")):
+	with open(items_file_path, "r") as f:
+		data = json.load(f)
+
+	# item_id に対応する商品が存在するか確認
+	if item_id < 0 or item_id >= len(data["items"]):
+		raise HTTPException(status_code=404, detail="Item not found")
+
+	return data["items"][item_id]
