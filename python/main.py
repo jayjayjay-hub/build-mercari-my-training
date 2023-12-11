@@ -3,9 +3,34 @@ import logging
 import json
 import hashlib
 
+from sqlalchemy import create_engine, Column, Integer, String, MetaData, Table, select
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 from fastapi import FastAPI, Form, HTTPException, UploadFile, File, Path
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
+
+# SQLite db path
+database_url = "sqlite:///items.db"
+
+# SQLAlchemy engine
+engine = create_engine(database_url)
+
+# SQLAlchemy metadata
+metadata = MetaData()
+
+# items table
+items = Table(
+	"items",
+	metadata,
+	Column("id", Integer, primary_key = True, index = True),
+	Column("name", String, index = True),
+	Column("category", String, index = True),
+	Column("image_name", String, index = True),
+)
+
+# create table
+metadata.create_all(engine)
 
 app = FastAPI()
 logger = logging.getLogger("uvicorn")
