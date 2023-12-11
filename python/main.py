@@ -1,8 +1,9 @@
 import os
 import logging
 import json
+import hashlib
 
-from fastapi import FastAPI, Form, HTTPException
+from fastapi import FastAPI, Form, HTTPException, UploadFile, File
 from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -29,7 +30,7 @@ def root():
 	return PlainTextResponse(content="Hello, world!")
 
 @app.post("/items")
-def add_item(name: str = Form(...), category: str = Form(...)):
+def add_item(name: str = Form(...), category: str = Form(...), image: UploadFile = File(...)):
 	logger.info(f"Receive item: {name}, category: {category}")
 
 	# items.json ファイルが存在しないか、中身が空である場合、初期化する
@@ -41,13 +42,23 @@ def add_item(name: str = Form(...), category: str = Form(...)):
 		with open(items_file_path, "r") as f:
 			data = json.load(f)
 
-	new_item = {"name": name, "category": category}
+	# ファイルのハッシュを計算してファイル名を作成
+	file_content = image.file.read()
+	image_hash = hashlib.sha256(file_content).hexdigest()
+	image_filename = f"{image_hash}.jpg"
+
+	# 画像を保存
+	image_path = os.path.join(images_folder_path, image_filename)
+	with open(image_path, "wb") as f:
+		f.write(file_content)
+
+	new_item = {"name": name, "category": category, "image_name": image_filename}
 	data["items"].append(new_item)
 
 	with open(items_file_path, "w") as f:
 		json.dump(data, f)
 
-	return {"message": f"Item received: {name}, category: {category}"}
+	return {"message": f"Item received: {name}, category: {category}, image: {image_filename}"}
 
 @app.get("/items")
 def get_items():
