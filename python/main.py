@@ -138,3 +138,20 @@ def get_item(item_id: int = Path(..., title="The ID of the item to get")):
 		raise HTTPException(status_code=404, detail="Item not found")
 
 	return {"id": result.id, "name": result.name, "category": result.category, "image_name": result.image_name}
+
+@app.get("/search")
+def search_items(keyword: str):
+	# SQLAlchemy session を作成
+	SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+	db = SessionLocal()
+
+	# itemsテーブルから指定されたキーワードを含むデータを取得
+	result = db.query(items).filter(items.c.name.contains(keyword)).all()
+
+	# セッションのクローズ
+	db.close()
+
+	# 結果をリストに変換
+	items_list = [{"name": row.name, "category": row.category} for row in result]
+
+	return {"items": items_list}
