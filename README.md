@@ -1,4 +1,10 @@
-# Build@Mercari Training Program 2023
+<h1 align="center">
+  Build@Mercari Training Program 2023
+</h1>
+
+<p align="center">
+  <b><i>This repository is created for the purpose of review.</i></b><br>
+</p>
 
 This is @jayjayjay-hub's build training repository.
 
