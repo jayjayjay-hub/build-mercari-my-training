@@ -17,4 +17,4 @@ COPY ./app /code/app
 COPY ./db /code/db
 
 #
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0","--port", "80"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0","--port", "$PORT"]
