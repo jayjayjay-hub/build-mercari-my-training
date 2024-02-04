@@ -38,7 +38,7 @@ def get_db():
 
 @app.get("/")
 async def root():
-	return PlainTextResponse(content="Hello, world!")
+	return {"message" : "Hello World"}
 
 @app.get("/items")
 async def get_items(db: Session = Depends(get_db)):
