@@ -4,6 +4,8 @@ import random
 import requests
 import json
 
+BACKEND_URL = "http://back:3000/"
+
 page = st.sidebar.selectbox('Choose a page', ['Home', 'Post Item', 'Get Items', 'Get Item by ID', 'Search Items', 'Delete Item'])
 
 if page == 'Home':
@@ -29,7 +31,7 @@ if page == 'Post Item':
 		st.write("Item received: ", data)
 		st.write('response:')
 		# APIにリクエストを送信
-		response = requests.post("http://localhost:8000/items", data=data)
+		response = requests.post(f"{BACKEND_URL}items", data=data)
 		# レスポンスのステータスコードを表示
 		st.write(response.status_code)
 		# レスポンスのJSONを表示
