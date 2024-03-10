@@ -6,9 +6,9 @@ services:
       - "3000:3000"
     working_dir: /fastapi_app
     volumes:
-      - ./db/items.db:/fastapi_app/db/items.db
+      - ./back/db:/fastapi_app/back/db
     environment:
-      - DATABASE_URL=sqlite:///./db/items.db
+      - DATABASE_URL=sqlite:///./back/db/items.db
     networks:
       - fastapi_network
     restart: always

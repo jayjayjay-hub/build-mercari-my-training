@@ -10,7 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic
 from sqlalchemy.orm import Session
 
-from . import models, schemas, crud
+from . import schemas
+from . import crud, models
 from .database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
