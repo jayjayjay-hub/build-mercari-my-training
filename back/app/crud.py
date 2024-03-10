@@ -5,10 +5,12 @@ import json
 import hashlib
 
 from sqlalchemy.orm import Session
-from . import models, schemas
+
+from . import models
+from . import schemas
 from fastapi import UploadFile, status, Response, HTTPException
 
-items_file_path = "../db/items.json"
+items_file_path = "../../db/items.json"
 images_folder_path = "images/"
 
 def post_item(name: str, category: str, image: UploadFile, db: Session):
